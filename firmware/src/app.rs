@@ -4,36 +4,6 @@
 use crate::{dap, hal};
 use num_enum::TryFromPrimitive;
 
-#[derive(Copy, Clone, TryFromPrimitive)]
-#[repr(u16)]
-pub enum PinState {
-    Low = 0,
-    High = 1,
-}
-
-#[derive(Copy, Clone, TryFromPrimitive)]
-#[repr(u16)]
-pub enum Mode {
-    HighImpedance = 0,
-    Flash = 1,
-    FPGA = 2,
-}
-
-#[derive(Copy, Clone)]
-pub enum Request {
-    SetCS(PinState),
-    SetFPGA(PinState),
-    SetTPwr(PinState),
-    SetLED(PinState),
-    SetMode(Mode),
-    GetTPwr,
-    Bootload,
-    Suspend,
-    SPITransmit(([u8; 64], usize)),
-    DAP1Command(([u8; 64], usize)),
-    DAP2Command(([u8; 64], usize)),
-}
-
 pub struct App<'a> {
     flash: &'a bsp::flash::Flash,
     rcc: &'a bsp::rcc::RCC,
@@ -104,35 +74,6 @@ impl<'a> App<'a> {
 
     fn process_request(&mut self, req: Request) {
         match req {
-            Request::SetCS(state) => self.pins.cs.set_state(state),
-            Request::SetFPGA(state) => self.pins.fpga_rst.set_state(state),
-            Request::SetTPwr(state) => self.pins.tpwr_en.set_state(state),
-            Request::SetLED(state) => self.pins.led.set_state(state),
-            Request::SetMode(mode) => match mode {
-                Mode::HighImpedance => {
-                    self.pins.high_impedance_mode();
-                    self.usb.spi_data_disable();
-                    self.usb.dap_enable();
-                    self.spi.disable();
-                }
-                Mode::Flash => {
-                    self.pins.flash_mode();
-                    self.usb.spi_data_enable();
-                    self.usb.dap_disable();
-                    self.spi.setup_spi();
-                }
-                Mode::FPGA => {
-                    self.pins.fpga_mode();
-                    self.usb.spi_data_enable();
-                    self.usb.dap_disable();
-                    self.spi.setup_spi();
-                }
-            },
-            Request::SPITransmit((txdata, n)) => {
-                let mut rxdata = [0u8; 64];
-                self.spi.exchange(&self.dma, &txdata[..n], &mut rxdata);
-                self.usb.spi_data_reply(&rxdata[..n]);
-            }
             Request::DAP1Command((report, n)) => {
                 let response = self.dap.process_command(&report[..n]);
                 if let Some(data) = response {
@@ -144,13 +85,6 @@ impl<'a> App<'a> {
                 if let Some(data) = response {
                     self.usb.dap2_reply(data);
                 }
-            }
-            Request::GetTPwr => self.usb.tpwr_reply(self.pins.tpwr_det.get_state()),
-            Request::Bootload => bsp::bootload::bootload(),
-            Request::Suspend => {
-                self.pins.high_impedance_mode();
-                self.pins.led.set_low();
-                self.pins.tpwr_en.set_low();
             }
         };
     }
