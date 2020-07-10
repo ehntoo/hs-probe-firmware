@@ -1,12 +1,12 @@
 #![no_std]
 #![no_main]
 
-use panic_rtt_target as _;
 use cortex_m_rt::entry;
-use rtt_target::{rtt_init_print, rprintln};
+use panic_rtt_target as _;
+use rtt_target::{rprintln, rtt_init_print};
+use stm32f7xx_hal::delay::Delay;
 use stm32f7xx_hal::prelude::*;
 use stm32f7xx_hal::rcc::{HSEClock, HSEClockMode};
-use stm32f7xx_hal::delay::Delay;
 
 #[entry]
 fn main() -> ! {
@@ -16,7 +16,8 @@ fn main() -> ! {
     let p = stm32f7xx_hal::pac::Peripherals::take().unwrap();
 
     let rcc = p.RCC.constrain();
-    let clocks = rcc.cfgr
+    let clocks = rcc
+        .cfgr
         .hse(HSEClock::new(12.mhz(), HSEClockMode::Bypass))
         .sysclk(72.mhz())
         .freeze();

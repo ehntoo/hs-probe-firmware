@@ -1,5 +1,5 @@
 use stm32ral::gpio;
-use stm32ral::{read_reg, write_reg, modify_reg};
+use stm32ral::{modify_reg, read_reg, write_reg};
 
 pub struct GPIO {
     p: gpio::Instance,
@@ -335,4 +335,60 @@ impl<'a> Pin<'a> {
 
 pub struct Pins<'a> {
     pub led: Pin<'a>,
+    pub swdi: Pin<'a>,
+    pub swdo: Pin<'a>,
+    pub swclk: Pin<'a>,
+    pub rst: Pin<'a>,
+}
+
+impl<'a> Pins<'a> {
+    pub fn setup(&self) {
+        self.swclk
+            .set_af(0)
+            .set_otype_pushpull()
+            .set_ospeed_veryhigh()
+            .set_mode_alternate()
+            .set_pull_up();
+
+        self.rst
+            .set_af(0)
+            .set_otype_pushpull()
+            .set_ospeed_veryhigh()
+            .set_otype_opendrain()
+            .set_high()
+            .set_mode_output();
+
+        self.swdo
+            .set_af(0)
+            .set_otype_pushpull()
+            .set_ospeed_veryhigh()
+            .set_mode_alternate();
+
+        self.swdi
+            .set_af(0)
+            .set_otype_pushpull()
+            .set_ospeed_veryhigh()
+            .set_mode_input()
+            .set_mode_alternate();
+    }
+
+    /// Disconnect MOSI from swdo, target drives the bus
+    pub fn swd_rx(&self) {
+        self.swdo.set_mode_input();
+    }
+
+    /// Connect MOSI to swdo, we drive the bus
+    pub fn swd_tx(&self) {
+        self.swdo.set_mode_alternate();
+    }
+
+    /// Swap clk pin to direct output mode for manual driving
+    pub fn swd_clk_direct(&self) {
+        self.swclk.set_mode_output();
+    }
+
+    /// Swap clk pin back to alternate mode for SPI use
+    pub fn swd_clk_spi(&self) {
+        self.swclk.set_mode_alternate();
+    }
 }

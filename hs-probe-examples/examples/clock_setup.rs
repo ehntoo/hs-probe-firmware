@@ -1,12 +1,11 @@
 #![no_std]
 #![no_main]
 
-use panic_rtt_target as _;
 use cortex_m_rt::entry;
-use rtt_target::{rtt_init_print, rprintln};
+use panic_rtt_target as _;
+use rtt_target::{rprintln, rtt_init_print};
 use stm32f7xx_hal::prelude::*;
 use stm32f7xx_hal::rcc::{HSEClock, HSEClockMode};
-
 
 #[entry]
 fn main() -> ! {
@@ -15,7 +14,8 @@ fn main() -> ! {
     let p = stm32f7xx_hal::pac::Peripherals::take().unwrap();
 
     let rcc = p.RCC.constrain();
-    let clocks = rcc.cfgr
+    let clocks = rcc
+        .cfgr
         .hse(HSEClock::new(12.mhz(), HSEClockMode::Bypass))
         .sysclk(216.mhz())
         .freeze();
@@ -28,7 +28,13 @@ fn main() -> ! {
     let pllm = cfg.pllm().bits() as u32;
     let plln = cfg.plln().bits() as u32;
     let pllq = cfg.pllq().bits() as u32;
-    rprintln!("PLL settings: m={}, n={}, p={:#b}, q={}", pllm, plln, cfg.pllp().bits(), pllq);
+    rprintln!(
+        "PLL settings: m={}, n={}, p={:#b}, q={}",
+        pllm,
+        plln,
+        cfg.pllp().bits(),
+        pllq
+    );
     rprintln!("VCO: {}", 12_000_000 * plln / pllm);
     rprintln!("PLLQ: {}", 12_000_000 * plln / pllm / pllq);
     rprintln!("CFGR: {:08x}", rcc.cfgr.read().bits());

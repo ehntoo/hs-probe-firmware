@@ -10,14 +10,13 @@
 use panic_rtt_target as _;
 
 use cortex_m_rt::entry;
-use hs_probe_bsp::rcc::{RCC, CoreFrequency};
-#[cfg(feature = "fs")]
-use hs_probe_bsp::otg_fs::{USB, UsbBus};
-#[cfg(feature = "hs")]
-use hs_probe_bsp::otg_hs::{USB, UsbBus};
-use usb_device::prelude::*;
 use hs_probe_bsp::gpio::GPIO;
-
+#[cfg(feature = "fs")]
+use hs_probe_bsp::otg_fs::{UsbBus, USB};
+#[cfg(feature = "hs")]
+use hs_probe_bsp::otg_hs::{UsbBus, USB};
+use hs_probe_bsp::rcc::{CoreFrequency, RCC};
+use usb_device::prelude::*;
 
 #[entry]
 fn main() -> ! {
@@ -29,8 +28,7 @@ fn main() -> ! {
     let gpioc = GPIO::new(stm32ral::gpio::GPIOC::take().unwrap());
     let led = gpioc.pin(10);
     // Open-drain output to LED (active low).
-    led
-        .set_high()
+    led.set_high()
         .set_otype_opendrain()
         .set_ospeed_low()
         .set_mode_output();
@@ -80,8 +78,8 @@ fn main() -> ! {
                     match serial.write(&buf[write_offset..count]) {
                         Ok(len) if len > 0 => {
                             write_offset += len;
-                        },
-                        _ => {},
+                        }
+                        _ => {}
                     }
                 }
             }

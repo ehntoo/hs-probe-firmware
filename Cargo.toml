@@ -3,6 +3,7 @@ members = [
     "hs-probe-bsp",
     "hs-probe-examples",
     "stm32f7xx-hal",
+    "firmware"
 ]
 
 [patch.crates-io]

@@ -1,11 +1,11 @@
 #![no_std]
 #![no_main]
 
-use panic_rtt_target as _;
 use cortex_m_rt::entry;
-use rtt_target::{rtt_init_print, rprintln};
-use hs_probe_bsp::rcc::{RCC, CoreFrequency};
 use hs_probe_bsp::gpio::GPIO;
+use hs_probe_bsp::rcc::{CoreFrequency, RCC};
+use panic_rtt_target as _;
+use rtt_target::{rprintln, rtt_init_print};
 
 #[entry]
 fn main() -> ! {
@@ -19,8 +19,7 @@ fn main() -> ! {
     let gpioc = GPIO::new(stm32ral::gpio::GPIOC::take().unwrap());
     let led = gpioc.pin(10);
     // Open-drain output to LED (active low).
-    led
-        .set_high()
+    led.set_high()
         .set_otype_opendrain()
         .set_ospeed_low()
         .set_mode_output();
