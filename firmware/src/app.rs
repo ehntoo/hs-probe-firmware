@@ -45,12 +45,12 @@ impl<'a> App<'a> {
         #[cfg(feature = "turbo")]
         let clocks = self.rcc.setup(CoreFrequency::F216MHz);
 
-        // Configure DMA for SPI1, SPI2, USART1 and USART2 transfers
-        self.dma.setup();
-
         // Configure GPIOs
         self.pins.setup();
         self.pins.high_impedance_mode();
+
+        // Configure DMA for SPI1, SPI2, USART1 and USART2 transfers
+        self.dma.setup();
 
         self.spi.set_base_clock(&clocks);
         self.spi.disable();

@@ -132,17 +132,23 @@ impl RCC {
             GPIOCEN: Enabled,
             GPIODEN: Enabled,
             GPIOEEN: Enabled,
+            GPIOFEN: Enabled,
             GPIOGEN: Enabled,
+            GPIOHEN: Enabled,
+            GPIOIEN: Enabled,
             DMA1EN: Enabled,
             DMA2EN: Enabled
         );
         modify_reg!(rcc, self.rcc, APB1ENR,
-            SPI2EN: Enabled,
-            USART2EN: Enabled
+            // SPI2EN: Enabled,
+            // USART2EN: Enabled
+            UART5EN: Enabled
         );
         modify_reg!(rcc, self.rcc, APB2ENR,
-            SPI1EN: Enabled,
-            USART1EN: Enabled
+            SPI5EN: Enabled,
+            USART6EN: Enabled
+            // SPI1EN: Enabled,
+            // USART1EN: Enabled
         );
 
         Clocks {

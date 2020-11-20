@@ -27,6 +27,10 @@ pub enum SPIPrescaler {
     Div256 = 0b111,
 }
 
+// spi1 -> SPI5_RX: DMA2, stream 3, channel 2
+// spi1 -> SPI5_TX: DMA2, stream 4, channel 2
+// usart1 -> UART5_RX: DMA1, stream 0, channel 4
+
 impl SPI {
     pub fn new(spi: spi::Instance) -> Self {
         SPI { spi, base_clock: AtomicU32::new(0) }
@@ -137,16 +141,16 @@ impl SPI {
         debug_assert!(rxdata.len() >= 64);
 
         // Set up DMA transfer (configures NDTR and MAR and enables streams)
-        dma.spi1_enable(txdata, &mut rxdata[..txdata.len()]);
+        dma.spi5_enable(txdata, &mut rxdata[..txdata.len()]);
 
         // Start SPI transfer
         modify_reg!(spi, self.spi, CR1, SPE: Enabled);
 
         // Busy wait for RX DMA completion (at most 43µs)
-        while dma.spi1_busy() {}
+        while dma.spi5_busy() {}
 
         // Disable SPI and DMA
-        dma.spi1_disable();
+        dma.spi5_disable();
         modify_reg!(spi, self.spi, CR1, SPE: Disabled);
     }
 
@@ -225,12 +229,12 @@ impl SPI {
         // The parity bit is currently being driven onto the bus by the target.
         // On the next rising edge, the target will release the bus, and we need
         // to then start driving it before sending any more clocks to avoid a false START.
-        let parity = pins.spi1_miso.is_high() as u8;
+        let parity = pins.spi5_miso.is_high() as u8;
         // Take direct control of SWCLK
         pins.swd_clk_direct();
         // Send one clock pulse. Target releases bus after rising edge.
-        pins.spi1_clk.set_low();
-        pins.spi1_clk.set_high();
+        pins.spi5_clk.set_low();
+        pins.spi5_clk.set_high();
         // Drive bus ourselves with 0 (all our SPI read transactions transmitted 0s)
         pins.swd_tx();
         // Restore SWCLK to SPI control
