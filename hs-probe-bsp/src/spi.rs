@@ -159,18 +159,17 @@ impl SPI {
         write_reg!(spi, self.spi, CR2, FRXTH: Quarter, DS: FourBit);
         self.write_dr_u8(data);
         self.wait_txe();
+        write_reg!(spi, self.spi, CR2, FRXTH: Quarter, DS: EightBit);
     }
 
     /// Transmit 8 bits
     pub fn tx8(&self, data: u8) {
-        write_reg!(spi, self.spi, CR2, FRXTH: Quarter, DS: EightBit);
         self.write_dr_u8(data);
         self.wait_txe();
     }
 
     /// Transmit 16 bits
     pub fn tx16(&self, data: u16) {
-        write_reg!(spi, self.spi, CR2, FRXTH: Quarter, DS: EightBit);
         self.write_dr_u16(data);
         self.wait_txe();
     }
@@ -180,7 +179,6 @@ impl SPI {
     /// We transmit an extra 7 trailing idle bits after the parity bit because
     /// it's much quicker to do that than reconfigure SPI to a smaller data size.
     pub fn swd_wdata_phase(&self, data: u32, parity: u8) {
-        write_reg!(spi, self.spi, CR2, FRXTH: Quarter, DS: EightBit);
         // Trigger 4 words, filling the FIFO
         self.write_dr_u16((data & 0xFFFF) as u16);
         self.write_dr_u16((data >> 16) as u16);
@@ -194,6 +192,7 @@ impl SPI {
         write_reg!(spi, self.spi, CR2, FRXTH: Quarter, DS: FourBit);
         self.write_dr_u8(0);
         self.wait_rxne();
+        write_reg!(spi, self.spi, CR2, FRXTH: Quarter, DS: EightBit);
         self.read_dr_u8()
     }
 
@@ -202,6 +201,7 @@ impl SPI {
         write_reg!(spi, self.spi, CR2, FRXTH: Quarter, DS: FiveBit);
         self.write_dr_u8(0);
         self.wait_rxne();
+        write_reg!(spi, self.spi, CR2, FRXTH: Quarter, DS: EightBit);
         self.read_dr_u8()
     }
 
@@ -211,7 +211,6 @@ impl SPI {
     /// the SWD lines at the end of RDATA in order to correctly sample PARITY
     /// and then resume driving SWDIO.
     pub fn swd_rdata_phase(&self, pins: &Pins) -> (u32, u8) {
-        write_reg!(spi, self.spi, CR2, FRXTH: Quarter, DS: EightBit);
         // Trigger 4 words, filling the FIFO
         self.write_dr_u16(0);
         self.write_dr_u16(0);
@@ -240,8 +239,7 @@ impl SPI {
         // Restore SWCLK to SPI control
         pins.swd_clk_spi();
 
-        // Trigger four dummy idle cycles
-        write_reg!(spi, self.spi, CR2, FRXTH: Quarter, DS: FourBit);
+        // Trigger dummy idle cycles
         self.write_dr_u8(0);
 
         // Now read the final data word that was waiting in RXFIFO
