@@ -70,7 +70,7 @@ impl RCC {
         );
 
         // Calculate PLL parameters and flash latency
-        let pllm = 6;
+        let pllm = 25;
         let plln;
         let pllp;
         let pllq;
@@ -78,21 +78,21 @@ impl RCC {
         let sysclk;
         match frequency {
             CoreFrequency::F48MHz => {
-                plln = 96;
+                plln = 192;
                 pllp = 0b01; // /4
                 pllq = 4;
                 flash_latency = 0b0001;
                 sysclk = 48_000_000;
             }
             CoreFrequency::F72MHz => {
-                plln = 144;
+                plln = 288;
                 pllp = 0b01; // /4
                 pllq = 6;
                 flash_latency = 0b0010;
                 sysclk = 72_000_000;
             }
             CoreFrequency::F216MHz => {
-                plln = 216;
+                plln = 432;
                 pllp = 0b00; // /2
                 pllq = 9;
                 flash_latency = 0b0111;
