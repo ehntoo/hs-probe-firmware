@@ -37,7 +37,7 @@ impl SPI {
     }
 
     pub fn set_base_clock(&self, clocks: &Clocks) {
-        if self.spi.deref() as *const _ == spi::SPI1 {
+        if self.spi.deref() as *const _ == spi::SPI5 {
             self.base_clock.store(clocks.pclk2(), Ordering::SeqCst);
         }
         if self.spi.deref() as *const _ == spi::SPI2 {
@@ -232,12 +232,12 @@ impl SPI {
         // The parity bit is currently being driven onto the bus by the target.
         // On the next rising edge, the target will release the bus, and we need
         // to then start driving it before sending any more clocks to avoid a false START.
-        let parity = pins.spi1_miso.is_high() as u8;
+        let parity = pins.spi5_miso.is_high() as u8;
         // Take direct control of SWCLK
         pins.swd_clk_direct();
         // Send one clock pulse. Target releases bus after rising edge.
-        pins.spi1_clk.set_low();
-        pins.spi1_clk.set_high();
+        pins.spi5_clk.set_low();
+        pins.spi5_clk.set_high();
         // Drive bus ourselves with 0 (all our SPI read transactions transmitted 0s)
         pins.swd_tx();
         // Restore SWCLK to SPI control

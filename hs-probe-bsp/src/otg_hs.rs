@@ -62,7 +62,8 @@ unsafe impl UsbPeripheral for USB {
 
         // Setup PLL
         write_reg!(usbphyc, phy, PLL1,
-            PLL1SEL: 0b000 // A value for 12MHz HSE
+            // PLL1SEL: 0b000 // A value for 12MHz HSE
+            PLL1SEL: 0b101
         );
         modify_reg!(usbphyc, phy, TUNE, |r| r | 0xF13);
         modify_reg!(usbphyc, phy, PLL1, PLL1EN: 1);

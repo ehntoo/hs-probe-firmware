@@ -69,7 +69,7 @@ impl RCC {
         modify_reg!(rcc, self.rcc, CFGR, HPRE: Div1, PPRE1: ppre1, PPRE2: ppre2);
 
         // Calculate PLL parameters and flash latency
-        let pllm = 6;
+        let pllm = 25;
         let plln;
         let pllp;
         let pllq;
@@ -77,21 +77,21 @@ impl RCC {
         let sysclk;
         match frequency {
             CoreFrequency::F48MHz => {
-                plln = 96;
+                plln = 192;
                 pllp = 0b01; // /4
                 pllq = 4;
                 flash_latency = 0b0001;
                 sysclk = 48_000_000;
             }
             CoreFrequency::F72MHz => {
-                plln = 144;
+                plln = 288;
                 pllp = 0b01; // /4
                 pllq = 6;
                 flash_latency = 0b0010;
                 sysclk = 72_000_000;
             }
             CoreFrequency::F216MHz => {
-                plln = 216;
+                plln = 432;
                 pllp = 0b00; // /2
                 pllq = 9;
                 flash_latency = 0b0111;
@@ -167,13 +167,15 @@ impl RCC {
             GPIOCEN: Enabled,
             GPIODEN: Enabled,
             GPIOEEN: Enabled,
+            GPIOFEN: Enabled,
             GPIOGEN: Enabled,
+            GPIOHEN: Enabled,
             GPIOIEN: Enabled,
             DMA1EN: Enabled,
             DMA2EN: Enabled
         );
-        modify_reg!(rcc, self.rcc, APB1ENR, SPI2EN: Enabled, USART2EN: Enabled);
-        modify_reg!(rcc, self.rcc, APB2ENR, SPI1EN: Enabled, USART1EN: Enabled);
+        modify_reg!(rcc, self.rcc, APB1ENR, UART5EN: Enabled, SPI2EN: Enabled);
+        modify_reg!(rcc, self.rcc, APB2ENR, SPI1EN: Enabled, SPI5EN: Enabled, USART6EN: Enabled);
 
         Clocks { sysclk }
     }

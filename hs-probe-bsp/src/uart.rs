@@ -38,12 +38,12 @@ impl<'a> UART<'a> {
             RE: Enabled,
             UE: Enabled
         );
-        self.dma.usart1_start(&mut self.buffer);
+        self.dma.uart5_start(&mut self.buffer);
     }
 
     /// End UART reception.
     pub fn stop(&self) {
-        self.dma.usart1_stop();
+        self.dma.uart5_stop();
         modify_reg!(usart, self.uart, CR1, RE: Disabled);
     }
 
@@ -78,7 +78,7 @@ impl<'a> UART<'a> {
     ///
     /// Subsequent calls to read() may return a different amount of data.
     pub fn bytes_available(&self) -> usize {
-        let dma_idx = self.buffer.len() - self.dma.usart1_ndtr();
+        let dma_idx = self.buffer.len() - self.dma.uart5_ndtr();
         if dma_idx >= self.last_idx {
             dma_idx - self.last_idx
         } else {
@@ -98,7 +98,7 @@ impl<'a> UART<'a> {
         // all prior data. Even if the DMA writes new data while we're
         // processing we won't get out of sync and will handle the new
         // data next time read() is called.
-        let dma_idx = self.buffer.len() - self.dma.usart1_ndtr();
+        let dma_idx = self.buffer.len() - self.dma.uart5_ndtr();
 
         match dma_idx.cmp(&self.last_idx) {
             Ordering::Equal => {

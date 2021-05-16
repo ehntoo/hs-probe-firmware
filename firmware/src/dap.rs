@@ -503,8 +503,8 @@ impl<'a> DAP<'a> {
         cortex_m::asm::delay(42 * wait);
 
         // Read and return pin state
-        let state = ((self.pins.spi1_clk.get_state() as u8) << SWCLK_POS)
-            | ((self.pins.spi1_miso.get_state() as u8) << SWDIO_POS)
+        let state = ((self.pins.spi5_clk.get_state() as u8) << SWCLK_POS)
+            | ((self.pins.spi5_miso.get_state() as u8) << SWDIO_POS)
             | ((self.pins.spi2_mosi.get_state() as u8) << TDI_POS)
             | ((self.pins.spi2_miso.get_state() as u8) << TDO_POS)
             | (1 << NTRST_POS)

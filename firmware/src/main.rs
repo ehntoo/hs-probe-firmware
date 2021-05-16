@@ -30,7 +30,7 @@ unsafe fn pre_init() {
     //
     // It must be called from pre_init as otherwise the
     // flag is overwritten when statics are initialised.
-    bsp::bootload::check();
+    // bsp::bootload::check();
 }
 
 #[entry]
@@ -53,33 +53,35 @@ fn main() -> ! {
         stm32ral::dma::DMA1::take().unwrap(),
         stm32ral::dma::DMA2::take().unwrap(),
     );
-    let spi1 = bsp::spi::SPI::new(stm32ral::spi::SPI1::take().unwrap());
+    let spi5 = bsp::spi::SPI::new(stm32ral::spi::SPI5::take().unwrap());
     let spi2 = bsp::spi::SPI::new(stm32ral::spi::SPI2::take().unwrap());
-    let mut uart1 = bsp::uart::UART::new(stm32ral::usart::USART1::take().unwrap(), &dma);
+    let mut uart5 = bsp::uart::UART::new(stm32ral::usart::UART5::take().unwrap(), &dma);
 
-    let _gpioa = bsp::gpio::GPIO::new(stm32ral::gpio::GPIOA::take().unwrap());
+    let gpioa = bsp::gpio::GPIO::new(stm32ral::gpio::GPIOA::take().unwrap());
     let gpiob = bsp::gpio::GPIO::new(stm32ral::gpio::GPIOB::take().unwrap());
-    let gpioc = bsp::gpio::GPIO::new(stm32ral::gpio::GPIOC::take().unwrap());
+    let _gpioc = bsp::gpio::GPIO::new(stm32ral::gpio::GPIOC::take().unwrap());
     let gpiod = bsp::gpio::GPIO::new(stm32ral::gpio::GPIOD::take().unwrap());
     let gpioe = bsp::gpio::GPIO::new(stm32ral::gpio::GPIOE::take().unwrap());
+    let gpiof = bsp::gpio::GPIO::new(stm32ral::gpio::GPIOF::take().unwrap());
     let gpiog = bsp::gpio::GPIO::new(stm32ral::gpio::GPIOG::take().unwrap());
+    let gpioh = bsp::gpio::GPIO::new(stm32ral::gpio::GPIOH::take().unwrap());
     let gpioi = bsp::gpio::GPIO::new(stm32ral::gpio::GPIOI::take().unwrap());
 
     let pins = bsp::gpio::Pins {
-        led_red: gpioc.pin(10),
-        led_green: gpiob.pin(8),
+        led_red: gpioa.pin(10),
+        led_green: gpiob.pin(0),
         led_blue: gpioe.pin(0),
         t5v_en: gpiob.pin(1),
         tvcc_en: gpioe.pin(2),
-        reset: gpiog.pin(13),
-        gnd_detect: gpiog.pin(14),
-        usart1_rx: gpiob.pin(7),
-        usart2_rx: gpiod.pin(6),
-        usart2_tx: gpiod.pin(5),
-        spi1_clk: gpiob.pin(3),
-        spi1_miso: gpiob.pin(4),
-        spi1_mosi: gpiob.pin(5),
-        spi2_clk: gpioi.pin(1),
+        reset: gpioa.pin(6),
+        gnd_detect: gpiog.pin(5),
+        uart5_rx: gpiod.pin(2),
+        usart6_rx: gpiog.pin(9),
+        usart6_tx: gpiog.pin(14),
+        spi5_clk: gpioh.pin(6),
+        spi5_miso: gpioh.pin(7),
+        spi5_mosi: gpiof.pin(9),
+        spi2_clk: gpiob.pin(3),
         spi2_miso: gpioi.pin(2),
         spi2_mosi: gpioi.pin(3),
         usb_dm: gpiob.pin(14),
@@ -90,12 +92,12 @@ fn main() -> ! {
     let syst = stm32ral::syst::SYST::take().unwrap();
     let delay = bsp::delay::Delay::new(syst);
 
-    let swd = swd::SWD::new(&spi1, &pins);
+    let swd = swd::SWD::new(&spi5, &pins);
     let jtag = jtag::JTAG::new(&spi2, &dma, &pins, &delay);
-    let mut dap = dap::DAP::new(swd, jtag, &mut uart1, &pins);
+    let mut dap = dap::DAP::new(swd, jtag, &mut uart5, &pins);
 
     // Create App instance with the HAL instances
-    let mut app = app::App::new(&rcc, &dma, &pins, &spi1, &spi2, &mut usb, &mut dap, &delay);
+    let mut app = app::App::new(&rcc, &dma, &pins, &spi5, &spi2, &mut usb, &mut dap, &delay);
 
     rprintln!("Starting...");
 

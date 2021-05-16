@@ -373,16 +373,16 @@ pub struct Pins<'a> {
     pub gnd_detect: Pin<'a>,
 
     // Used for SWO in SWD mode
-    pub usart1_rx: Pin<'a>,
+    pub uart5_rx: Pin<'a>,
 
     // Used for external serial interface
-    pub usart2_rx: Pin<'a>,
-    pub usart2_tx: Pin<'a>,
+    pub usart6_rx: Pin<'a>,
+    pub usart6_tx: Pin<'a>,
 
-    // SPI pins for SWD, SPI1_MOSI is used as TMS in JTAG mode
-    pub spi1_clk: Pin<'a>, // Physically connected to SPI2_CLK
-    pub spi1_miso: Pin<'a>,
-    pub spi1_mosi: Pin<'a>,
+    // SPI pins for SWD, SPI5_MOSI is used as TMS in JTAG mode
+    pub spi5_clk: Pin<'a>, // Physically connected to SPI1_CLK
+    pub spi5_miso: Pin<'a>,
+    pub spi5_mosi: Pin<'a>,
 
     // SPI pins for JTAG, disabled in SWD mode
     pub spi2_clk: Pin<'a>, // Physically connected to SPI1_CLK
@@ -400,36 +400,36 @@ impl<'a> Pins<'a> {
     pub fn setup(&self) {
         // Open-drain output to LED (active low).
         self.led_red
-            .set_high()
+            .set_low()
             .set_otype_opendrain()
             .set_ospeed_low()
             .set_mode_output();
 
         self.led_green
-            .set_high()
+            .set_low()
             .set_otype_opendrain()
             .set_ospeed_low()
             .set_mode_output();
 
-        self.led_blue
-            .set_high()
-            .set_otype_opendrain()
-            .set_ospeed_low()
-            .set_mode_output();
-
-        // Push-pull output drives target 5V supply enable.
-        self.t5v_en
-            .set_low()
-            .set_otype_pushpull()
-            .set_ospeed_low()
-            .set_mode_output();
-
-        // Push-pull output drives target supply LDO (active high).
-        self.tvcc_en
-            .set_low()
-            .set_otype_pushpull()
-            .set_ospeed_low()
-            .set_mode_output();
+        // self.led_blue
+        //     .set_high()
+        //     .set_otype_opendrain()
+        //     .set_ospeed_low()
+        //     .set_mode_output();
+        //
+        // // Push-pull output drives target 5V supply enable.
+        // self.t5v_en
+        //     .set_low()
+        //     .set_otype_pushpull()
+        //     .set_ospeed_low()
+        //     .set_mode_output();
+        //
+        // // Push-pull output drives target supply LDO (active high).
+        // self.tvcc_en
+        //     .set_low()
+        //     .set_otype_pushpull()
+        //     .set_ospeed_low()
+        //     .set_mode_output();
 
         // Open-drain output to RESET reset line (active low).
         self.reset
@@ -442,49 +442,49 @@ impl<'a> Pins<'a> {
         self.gnd_detect.set_pull_up().set_mode_input();
 
         // Used for SWO in SWD mode. Starts high-impedance.
-        self.usart1_rx.set_af(7).set_mode_input();
+        self.uart5_rx.set_af(7).set_mode_input();
 
         // VCP pins
-        self.usart2_rx.set_af(7).set_pull_up().set_mode_alternate();
-        self.usart2_tx
+        self.usart6_rx.set_af(7).set_pull_up().set_mode_alternate();
+        self.usart6_tx
             .set_high()
             .set_ospeed_high()
             .set_af(7)
             .set_mode_alternate();
 
-        // Push-pull output to SPI1_CLK. Starts high-impedance.
-        self.spi1_clk
+        // Push-pull output to SPI5_CLK. Starts high-impedance.
+        self.spi5_clk
             .set_af(5)
             .set_otype_pushpull()
             .set_ospeed_veryhigh()
             .set_mode_input();
 
-        // Input to SPI1_MISO
-        self.spi1_miso.set_af(5).set_mode_input();
+        // Input to SPI5_MISO
+        self.spi5_miso.set_af(5).set_mode_input();
 
-        // Push-pull output to SPI1_MOSI. Starts high-impedance.
-        self.spi1_mosi
+        // Push-pull output to SPI5_MOSI. Starts high-impedance.
+        self.spi5_mosi
             .set_af(5)
             .set_otype_pushpull()
             .set_ospeed_veryhigh()
             .set_mode_input();
 
-        // Push-pull output to SPI2_CLK. Starts high-impedance.
-        self.spi2_clk
-            .set_af(5)
-            .set_otype_pushpull()
-            .set_ospeed_veryhigh()
-            .set_mode_input();
-
-        // Input to SPI2_MISO
-        self.spi2_miso.set_af(5).set_mode_input();
-
-        // Push-pull output to SPI2_MOSI. Starts high-impedance.
-        self.spi2_mosi
-            .set_af(5)
-            .set_otype_pushpull()
-            .set_ospeed_veryhigh()
-            .set_mode_input();
+        // // Push-pull output to SPI2_CLK. Starts high-impedance.
+        // self.spi2_clk
+        //     .set_af(5)
+        //     .set_otype_pushpull()
+        //     .set_ospeed_veryhigh()
+        //     .set_mode_input();
+        //
+        // // Input to SPI2_MISO
+        // self.spi2_miso.set_af(5).set_mode_input();
+        //
+        // // Push-pull output to SPI2_MOSI. Starts high-impedance.
+        // self.spi2_mosi
+        //     .set_af(5)
+        //     .set_otype_pushpull()
+        //     .set_ospeed_veryhigh()
+        //     .set_mode_input();
 
         // USB HighSpeed pins
         self.usb_dm
@@ -497,20 +497,20 @@ impl<'a> Pins<'a> {
             .set_otype_pushpull()
             .set_ospeed_veryhigh()
             .set_mode_alternate();
-        self.usb_sel
-            .set_high()
-            .set_otype_pushpull()
-            .set_ospeed_low()
-            .set_mode_output();
+        // self.usb_sel
+        //     .set_high()
+        //     .set_otype_pushpull()
+        //     .set_ospeed_low()
+        //     .set_mode_output();
     }
 
     /// Place SPI pins into high-impedance mode
     pub fn high_impedance_mode(&self) {
         self.reset.set_high().set_mode_output();
-        self.usart1_rx.set_mode_input();
-        self.spi1_clk.set_mode_input();
-        self.spi1_miso.set_mode_input();
-        self.spi1_mosi.set_mode_input();
+        self.uart5_rx.set_mode_input();
+        self.spi5_clk.set_mode_input();
+        self.spi5_miso.set_mode_input();
+        self.spi5_mosi.set_mode_input();
         self.spi2_clk.set_mode_input();
         self.spi2_miso.set_mode_input();
         self.spi2_mosi.set_mode_input();
@@ -519,10 +519,10 @@ impl<'a> Pins<'a> {
     /// Place SPI pins into JTAG mode
     pub fn jtag_mode(&self) {
         self.reset.set_mode_output();
-        self.usart1_rx.set_mode_input();
-        self.spi1_clk.set_mode_input();
-        self.spi1_miso.set_mode_input();
-        self.spi1_mosi.set_mode_output();
+        self.uart5_rx.set_mode_input();
+        self.spi5_clk.set_mode_input();
+        self.spi5_miso.set_mode_input();
+        self.spi5_mosi.set_mode_output();
         self.spi2_clk.set_mode_output();
         self.spi2_miso.set_mode_input();
         self.spi2_mosi.set_mode_output();
@@ -531,32 +531,32 @@ impl<'a> Pins<'a> {
     /// Place SPI pins into SWD mode
     pub fn swd_mode(&self) {
         self.reset.set_mode_output();
-        self.usart1_rx.set_mode_alternate();
+        self.uart5_rx.set_mode_alternate();
         self.spi2_clk.set_mode_input();
         self.spi2_miso.set_mode_input();
         self.spi2_mosi.set_mode_input();
-        self.spi1_clk.set_mode_alternate();
-        self.spi1_miso.set_mode_alternate();
-        self.spi1_mosi.set_mode_alternate();
+        self.spi5_clk.set_mode_alternate();
+        self.spi5_miso.set_mode_alternate();
+        self.spi5_mosi.set_mode_alternate();
     }
 
-    /// Disconnect SPI1_MOSI from SWDIO, target drives the bus
+    /// Disconnect SPI5_MOSI from SWDIO, target drives the bus
     pub fn swd_rx(&self) {
-        self.spi1_mosi.set_mode_input();
+        self.spi5_mosi.set_mode_input();
     }
 
-    /// Connect SPI1_MOSI to SWDIO, we drive the bus
+    /// Connect SPI5_MOSI to SWDIO, we drive the bus
     pub fn swd_tx(&self) {
-        self.spi1_mosi.set_mode_alternate();
+        self.spi5_mosi.set_mode_alternate();
     }
 
-    /// Swap SPI1_CLK pin to direct output mode for manual driving
+    /// Swap SPI5_CLK pin to direct output mode for manual driving
     pub fn swd_clk_direct(&self) {
-        self.spi1_clk.set_mode_output();
+        self.spi5_clk.set_mode_output();
     }
 
-    /// Swap SPI1_CLK pin back to alternate mode for SPI use
+    /// Swap SPI5_CLK pin back to alternate mode for SPI use
     pub fn swd_clk_spi(&self) {
-        self.spi1_clk.set_mode_alternate();
+        self.spi5_clk.set_mode_alternate();
     }
 }

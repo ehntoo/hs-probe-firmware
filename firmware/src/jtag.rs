@@ -28,7 +28,7 @@ impl<'a> JTAG<'a> {
     /// Create a new JTAG object from the provided Pins struct.
     pub fn new(spi: &'a SPI, dma: &'a DMA, pins: &'a Pins, delay: &'a Delay) -> Self {
         let jtag_pins = JTAGPins {
-            tms: &pins.spi1_mosi,
+            tms: &pins.spi5_mosi,
             tck: &pins.spi2_clk,
             tdo: &pins.spi2_miso,
             tdi: &pins.spi2_mosi,
