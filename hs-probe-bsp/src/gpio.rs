@@ -442,14 +442,14 @@ impl<'a> Pins<'a> {
         self.gnd_detect.set_pull_up().set_mode_input();
 
         // Used for SWO in SWD mode. Starts high-impedance.
-        self.uart5_rx.set_af(7).set_mode_input();
+        self.uart5_rx.set_af(8).set_mode_input();
 
         // VCP pins
-        self.usart6_rx.set_af(7).set_pull_up().set_mode_alternate();
+        self.usart6_rx.set_af(8).set_pull_up().set_mode_alternate();
         self.usart6_tx
             .set_high()
             .set_ospeed_high()
-            .set_af(7)
+            .set_af(8)
             .set_mode_alternate();
 
         // Push-pull output to SPI5_CLK. Starts high-impedance.
