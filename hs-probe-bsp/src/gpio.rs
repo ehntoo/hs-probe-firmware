@@ -454,7 +454,8 @@ impl<'a> Pins<'a> {
 
         // Push-pull output to SPI5_CLK. Starts high-impedance.
         self.spi5_clk
-            .set_af(5)
+            // .set_af(5)
+            .set_af(11)
             .set_otype_pushpull()
             .set_ospeed_veryhigh()
             .set_mode_input();
@@ -464,7 +465,8 @@ impl<'a> Pins<'a> {
 
         // Push-pull output to SPI5_MOSI. Starts high-impedance.
         self.spi5_mosi
-            .set_af(5)
+            // .set_af(5)
+            .set_af(11)
             .set_otype_pushpull()
             .set_ospeed_veryhigh()
             .set_mode_input();
@@ -537,6 +539,17 @@ impl<'a> Pins<'a> {
         self.spi2_mosi.set_mode_input();
         self.spi5_clk.set_mode_alternate();
         self.spi5_miso.set_mode_alternate();
+        self.spi5_mosi.set_mode_alternate();
+    }
+
+    pub fn qspi_mode(&self) {
+        self.reset.set_mode_output();
+        self.uart5_rx.set_mode_alternate();
+        self.spi2_clk.set_mode_input();
+        self.spi2_miso.set_mode_input();
+        self.spi2_mosi.set_mode_input();
+        self.spi5_clk.set_mode_alternate();
+        self.spi5_miso.set_mode_input();
         self.spi5_mosi.set_mode_alternate();
     }
 

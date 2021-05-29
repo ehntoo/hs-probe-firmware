@@ -53,6 +53,7 @@ fn main() -> ! {
         stm32ral::dma::DMA1::take().unwrap(),
         stm32ral::dma::DMA2::take().unwrap(),
     );
+    let qspi = bsp::qspi::QSPI::new(stm32ral::quadspi::QUADSPI::take().unwrap());
     let spi5 = bsp::spi::SPI::new(stm32ral::spi::SPI5::take().unwrap());
     let spi2 = bsp::spi::SPI::new(stm32ral::spi::SPI2::take().unwrap());
     let mut uart5 = bsp::uart::UART::new(stm32ral::usart::UART5::take().unwrap(), &dma);
@@ -92,7 +93,7 @@ fn main() -> ! {
     let syst = stm32ral::syst::SYST::take().unwrap();
     let delay = bsp::delay::Delay::new(syst);
 
-    let swd = swd::SWD::new(&spi5, &pins);
+    let swd = swd::SWD::new(&qspi, &pins);
     let jtag = jtag::JTAG::new(&spi2, &dma, &pins, &delay);
     let mut dap = dap::DAP::new(swd, jtag, &mut uart5, &pins);
 

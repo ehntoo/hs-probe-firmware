@@ -1,7 +1,8 @@
 // Copyright 2019-2020 Adam Greig
 // Dual licensed under the Apache 2.0 and MIT licenses.
 
-use crate::bsp::{gpio::Pins, spi::SPI};
+// use crate::bsp::{gpio::Pins, spi::SPI};
+use crate::bsp::{gpio::Pins, qspi::QSPI};
 use num_enum::IntoPrimitive;
 
 #[derive(Copy, Clone, Debug)]
@@ -25,7 +26,7 @@ pub enum DPRegister {
 }
 
 pub struct SWD<'a> {
-    spi: &'a SPI,
+    qspi: &'a QSPI,
     pins: &'a Pins<'a>,
 
     wait_retries: usize,
@@ -77,17 +78,17 @@ impl ACK {
 }
 
 impl<'a> SWD<'a> {
-    pub fn new(spi: &'a SPI, pins: &'a Pins) -> Self {
+    pub fn new(qspi: &'a QSPI, pins: &'a Pins) -> Self {
         SWD {
-            spi,
+            qspi,
             pins,
             wait_retries: 8,
         }
     }
 
     pub fn set_clock(&self, max_frequency: u32) -> bool {
-        if let Some(prescaler) = self.spi.calculate_prescaler(max_frequency) {
-            self.spi.set_prescaler(prescaler);
+        if let Some(prescaler) = self.qspi.calculate_prescaler(max_frequency) {
+            self.qspi.set_prescaler(prescaler);
             true
         } else {
             false
@@ -95,11 +96,11 @@ impl<'a> SWD<'a> {
     }
 
     pub fn spi_enable(&self) {
-        self.spi.setup_swd();
+        self.qspi.setup_swd();
     }
 
     pub fn spi_disable(&self) {
-        self.spi.disable();
+        self.qspi.disable();
     }
 
     pub fn set_wait_retries(&mut self, wait_retries: usize) {
@@ -107,7 +108,8 @@ impl<'a> SWD<'a> {
     }
 
     pub fn idle_low(&self) {
-        self.spi.tx4(0x0);
+        // self.qspi.tx4(0x0);
+        self.qspi.swd_dummy_bytes();
     }
 
     pub fn read_dp(&self, a: u8) -> Result<u32> {
@@ -144,32 +146,35 @@ impl<'a> SWD<'a> {
 
     fn read_inner(&self, apndp: APnDP, a: u8) -> Result<u32> {
         let req = Self::make_request(apndp, RnW::R, a);
-        self.spi.tx8(req);
-        self.spi.wait_busy();
-        self.spi.drain();
-        self.pins.swd_rx();
+        let ack = self.qspi.swd_read_req(req);
+        // self.spi.tx8(req);
+        // self.spi.wait_busy();
+        // self.spi.drain();
+        // self.pins.swd_rx();
 
         // 1 clock for turnaround and 3 for ACK
-        let ack = self.spi.rx4() >> 1;
+        // let ack = self.spi.rx4() >> 1;
         match ACK::try_ok(ack as u8) {
             Ok(_) => (),
             Err(e) => {
                 // On non-OK ACK, target has released the bus but
                 // is still expecting a turnaround clock before
                 // the next request, and we need to take over the bus.
-                self.pins.swd_tx();
-                self.idle_low();
+                // self.pins.swd_tx();
+                // self.idle_low();
+                self.qspi.swd_dummy_bytes();
                 return Err(e);
             }
         }
 
         // Read 8x4=32 bits of data and 8x1=8 bits for parity+turnaround+trailing.
         // Doing a batch of 5 8-bit reads is the quickest option as we keep the FIFO hot.
-        let (data, parity) = self.spi.swd_rdata_phase(self.pins);
+        // let (data, parity) = self.spi.swd_rdata_phase(self.pins);
+        let (data, parity) = self.qspi.swd_read_data();
         let parity = (parity & 1) as u32;
 
         // Back to driving SWDIO to ensure it doesn't float high
-        self.pins.swd_tx();
+        // self.pins.swd_tx();
 
         if parity == (data.count_ones() & 1) {
             Ok(data)
@@ -182,14 +187,15 @@ impl<'a> SWD<'a> {
         let req = Self::make_request(apndp, RnW::W, a);
         let parity = data.count_ones() & 1;
 
-        self.spi.tx8(req);
-        self.spi.wait_busy();
-        self.spi.drain();
-        self.pins.swd_rx();
+        // self.spi.tx8(req);
+        // self.spi.wait_busy();
+        // self.spi.drain();
+        // self.pins.swd_rx();
+        let ack = self.qspi.swd_write_req(req);
 
         // 1 clock for turnaround and 3 for ACK and 1 for turnaround
-        let ack = (self.spi.rx5() >> 1) & 0b111;
-        self.pins.swd_tx();
+        // let ack = (self.spi.rx5() >> 1) & 0b111;
+        // self.pins.swd_tx();
         match ACK::try_ok(ack as u8) {
             Ok(_) => (),
             Err(e) => return Err(e),
@@ -201,8 +207,9 @@ impl<'a> SWD<'a> {
         // until the FIFO is empty, and waiting for that costs more time overall.
         // Additionally, many debug ports require a couple of clock cycles after
         // the parity bit of a write transaction to make the write effective.
-        self.spi.swd_wdata_phase(data, parity as u8);
-        self.spi.wait_busy();
+        // self.spi.swd_wdata_phase(data, parity as u8);
+        // self.spi.wait_busy();
+        self.qspi.swd_write_data(data, parity as u8);
 
         Ok(())
     }
